@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fu.mybatis_demo.dao.TeacherDao">
+    <!--开启二级缓存，默认配置即可（不建议使用二级缓存） -->
+    <cache/>
+    <!-- 一对多 -->
+    <!-- 联表查询开始 -->
+    <!-- 按结果嵌套 推荐联表查询 映射简单 sql复杂 -->
+    <select id="getTeacher" resultMap="TeacherStudent">
+        SELECT s.id s_id,s.`name` s_name,t.id t_id,t.`name` t_name,t.class_name t_class_name  FROM student s,teacher t WHERE s.t_id = t.id and t.id = #{tid}
+    </select>
+    <resultMap id="TeacherStudent" type="TeacherVO">
+        <result property="id" column="t_id" jdbcType="INTEGER"/>
+        <result property="name" column="t_name" jdbcType="VARCHAR"/>
+        <result property="className" column="t_class_name" jdbcType="VARCHAR"/>
+        <!-- 复杂属性,单独处理 对象：association javaType=属性类型 ；集合：collection ofType=集合泛型信息 -->
+        <collection property="students" ofType="Student">
+            <result property="id" column="s_id"/>
+            <result property="name" column="s_name"/>
+            <result property="tId" column="t_id"/>
+        </collection>
+    </resultMap>
+    <!-- 联表查询结束 -->
+
+    <!-- 子查询开始 -->
+    <!-- 不推荐子查询 映射复杂 sql简单 -->
+    <select id="getTeacher2" resultMap="TeacherStudent2">
+        select * from teacher where id = #{tid}
+    </select>
+    <resultMap id="TeacherStudent2" type="TeacherVO">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="className" column="class_name" jdbcType="VARCHAR"/>
+        <collection property="students" javaType="ArrayList" ofType="Student" select="getStudentByTeacherId" column="id"/>
+    </resultMap>
+    <select id="getStudentByTeacherId" resultType="Student">
+        select * from student where t_id = #{tid}
+    </select>
+    <!-- 子查询结束 -->
+
+
+
+
+
+    <!-- 插件生成的代码 -->
+    <resultMap type="com.fu.mybatis_demo.entity.Teacher" id="BaseResultMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="className" column="class_name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">id
+    , name, class_name</sql>
+
+    <!-- 根据ID查询 -->
+    <select id="select" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from teacher
+        where id = #{id}
+    </select>
+
+    <!-- 查询全部 -->
+    <select id="selectAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from teacher
+        where 1=1
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insert" parameterType="com.fu.mybatis_demo.entity.Teacher">
+        insert into teacher
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="name != null">
+                name,
+            </if>
+            <if test="className != null">
+                class_name,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id},
+            </if>
+            <if test="name != null">
+                #{name},
+            </if>
+            <if test="className != null">
+                #{className},
+            </if>
+        </trim>
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.fu.mybatis_demo.entity.Teacher">
+        update teacher
+        <set>
+            <if test="id != null">
+                id = #{id},
+            </if>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="className != null">
+                class_name = #{className},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 删除 -->
+    <delete id="delete">
+        delete
+        from teacher
+        where id = #{id}
+        <where>
+            <if test="id != nul">
+                and id = #{id}
+            </if>
+            <if test="name != nul">
+                and `name` = #{name}
+            </if>
+            <if test="className != nul">
+                and calss_name = #{className}
+            </if>
+        </where>
+    </delete>
+
+</mapper>
+

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fu.mybatis_demo.dao.StudentDao">
+    <!--开启二级缓存，默认配置即可（不建议使用二级缓存） -->
+    <cache/>
+    <!-- 多对一 -->
+    <!-- 按结果嵌套处理方法二开始(推荐联表查询，映射简单，sql复杂) -->
+    <select id="getStudent2" resultMap="StudentTeacher2">
+        SELECT s.id s_id, s.`name` s_name, t.id t_id, t.`name` t_name, t.class_name t_class_name
+        FROM student s,
+             teacher t
+        WHERE s.t_id = t.id
+    </select>
+    <!-- property对应实体类的变量名，column对应数据库字段名或自定义字段名 -->
+    <resultMap id="StudentTeacher2" type="com.fu.mybatis_demo.entity.vo.StudentVO">
+        <result property="id" column="s_id" jdbcType="INTEGER"/>
+        <result property="name" column="s_name" jdbcType="VARCHAR"/>
+        <result property="tId" column="t_id" jdbcType="VARCHAR"/>
+        <association property="teacher" javaType="com.fu.mybatis_demo.entity.Teacher">
+            <result property="id" column="t_id"/>
+            <result property="name" column="t_name"/>
+            <result property="className" column="t_class_name"/>
+        </association>
+    </resultMap>
+    <!-- 按结果嵌套处理方法二结束 -->
+
+    <!-- 方法一开始(子查询，复杂，不推荐) -->
+    <select id="getStudent" resultMap="StudentTeacher">
+        select id, `name`, t_id
+        from student
+    </select>
+    <!-- 连表查询本质还是返回student，也就是你想查询出来的子表的对象 -->
+    <resultMap id="StudentTeacher" type="com.fu.mybatis_demo.entity.vo.StudentVO">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="tId" column="t_id" jdbcType="VARCHAR"/>
+        <!-- 复杂属性,单独处理 对象：association javaType=属性类型 ；集合：collection ofType=集合泛型信息 -->
+        <!-- property=Student实体类里定义的Teacher属性 column=Student实体类对应的主表Teacher  id select=<select id="查询的id"> -->
+        <association property="teacher" javaType="com.fu.mybatis_demo.entity.Teacher" select="getTeacher" column="t_id"/>
+    </resultMap>
+    <select id="getTeacher" resultType="com.fu.mybatis_demo.entity.Teacher">
+        select *
+        from teacher
+        where id = #{getTeacher_column_t_id}
+    </select>
+    <!-- 方法一结束 -->
+
+
+    <!-- 代码生成的可以不用管 -->
+    <resultMap type="com.fu.mybatis_demo.entity.Student" id="BaseResultMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="tId" column="t_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">id
+    , name, t_id</sql>
+
+    <!-- 根据ID查询 -->
+    <select id="select" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from student
+        where id = #{id}
+    </select>
+
+    <!-- 查询全部 -->
+    <select id="selectAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from student
+        where 1=1
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insert" parameterType="com.fu.mybatis_demo.entity.Student">
+        insert into student
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="name != null">
+                name,
+            </if>
+            <if test="tId != null">
+                t_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id},
+            </if>
+            <if test="name != null">
+                #{name},
+            </if>
+            <if test="tId != null">
+                #{tId},
+            </if>
+        </trim>
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.fu.mybatis_demo.entity.Student">
+        update student
+        <set>
+            <if test="id != null">
+                id = #{id},
+            </if>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="tId != null">
+                t_id = #{tId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 删除 -->
+    <delete id="delete">
+        delete
+        from student
+        where id = #{id}
+    </delete>
+</mapper>
+

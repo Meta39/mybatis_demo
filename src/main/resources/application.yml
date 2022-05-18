@@ -1,0 +1,29 @@
+server:
+  port: 80
+
+spring:
+  jackson:
+    date-format: yyyy-MM-dd hh:mm:ss
+    time-zone: GMT+8
+    # null字段不返回前端
+#    default-property-inclusion: non_null
+
+  #数据库
+  datasource:
+    username: root
+    password: 123456
+    #url中database为对应的数据库名称
+    url: jdbc:mysql://localhost:3306/mybatis_demo?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=Asia/Shanghai
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.fu.mybatis_demo.entity
+  #开启全局缓存 二级缓存需要开启实体类序列化，否则会报错
+  configuration:
+    cache-enabled: true
+
+#showSql
+logging:
+  level:
+    com.fu.mybatis_demo.dao: debug
